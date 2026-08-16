@@ -112,12 +112,30 @@ function openaiToGeminiBase(model, body, stream, signature = DEFAULT_THINKING_AG
       const content = msg.content;
 
       if (role === ROLE.SYSTEM && body.messages.length > 1) {
-        result.systemInstruction = {
-          role: GEMINI_ROLE.USER,
-          parts: [{ text: typeof content === "string" ? content : extractTextContent(content) }]
-        };
+  const rawText =
+    typeof content === "string"
+      ? content
+      : extractTextContent(content);
+
+  result.systemInstruction = {
+    role: GEMINI_ROLE.USER,
+    parts: [
+      {
+        text: sanitizeAntigravitySystemPrompt(rawText)
+      }
+    ]
+  };
+
       } else if (role === ROLE.USER || (role === ROLE.SYSTEM && body.messages.length === 1)) {
-        const parts = convertOpenAIContentToParts(content);
+  const parts = convertOpenAIContentToParts(content);
+
+  if (role === ROLE.SYSTEM) {
+    for (const part of parts) {
+      if (part.text) {
+        part.text = sanitizeAntigravitySystemPrompt(part.text);
+      }
+    }
+  }
         if (parts.length > 0) {
           result.contents.push({ role: GEMINI_ROLE.USER, parts });
         }
