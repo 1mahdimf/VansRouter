@@ -19,6 +19,18 @@ import {
 import { deriveSessionId, toNumericSessionId } from "../../utils/sessionManager.js";
 import { ROLE, GEMINI_ROLE, OPENAI_BLOCK, CLAUDE_BLOCK } from "../schema/index.js";
 
+const HERMES_IDENTITY_RE =
+  /You are Hermes Agent,\s*an intelligent AI assistant created by Nous Research\./gi;
+
+const HERMES_IDENTITY_REPLACEMENT =
+  "You are Hermes Agent. You are an intelligent AI assistant created by Nous Research.";
+
+export function sanitizeAntigravitySystemPrompt(text) {
+  if (!text || typeof text !== "string") return text;
+  return text.replace(HERMES_IDENTITY_RE, HERMES_IDENTITY_REPLACEMENT);
+}
+
+
 // Sanitize function names for Gemini API.
 // Gemini requires: starts with [a-zA-Z_], followed by [a-zA-Z0-9_.:\-], max 64 chars.
 // Replace any invalid character with '_' and truncate to 64.
